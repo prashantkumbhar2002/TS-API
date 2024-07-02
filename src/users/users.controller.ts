@@ -47,4 +47,29 @@ const registerUsers = async (req: Request, res: Response, next: NextFunction) =>
 }
 
 
-export { registerUsers };
+const loginUsers = async (req:Request, res: Response, next:NextFunction) => {
+    const { email, password } = req.body;
+    if(!email || !password){
+        return next(createHttpError(400, 'All fields are required'));
+    }
+    try {
+        let user = await userModel.findOne({email});
+        if(!user){
+            return next(createHttpError(404, 'User not found!'));
+        }
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        if(!isPasswordCorrect){
+            return next(createHttpError(401, 'Incorrect Password'));
+        }
+        try {
+            const token = jwt.sign( {sub: user._id }, config.jwtSecret as string, { expiresIn: config.jwtExpiry, algorithm: 'HS256'})
+            res.status(200).json({message: "User logged in Successfully", accessToken: token})
+        } catch (error) {
+            return next(createHttpError(500, 'Error while generating token'))
+        }
+    } catch (error) {
+        return next(createHttpError(500, 'Error while login user'));
+    }
+    
+}
+export { registerUsers, loginUsers };
