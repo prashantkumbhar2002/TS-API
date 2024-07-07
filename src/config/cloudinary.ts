@@ -8,17 +8,19 @@ cloudinary.config({
     api_secret: config.CLOUDINARY_API_SECRET
 });
 
-const uploadOnCloudinary = async (localpath: string, fileName: string, folder: string, mimeType: string) => {
+const uploadOnCloudinary = async (localpath: string, fileName: string, folder: string, resource_type: 'auto' | 'image' | 'video' | 'raw', mimeType: string) => {
     try {
         console.log(`Uploading file: ${localpath}, as ${fileName} with MIME type ${mimeType}`);
         if (!localpath || !fileName || !mimeType) {
             console.error('Invalid parameters provided for upload');
             return null;
         }
-
+        if(!resource_type){
+            resource_type: 'auto';
+        }
         // Upload to Cloudinary
         const response = await cloudinary.uploader.upload(localpath, { 
-            resource_type: "auto",
+            resource_type: resource_type,
             public_id: fileName, 
             folder: folder, 
             format: mimeType 

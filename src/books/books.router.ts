@@ -3,6 +3,7 @@ import { createBook } from "./books.controller";
 // import multer from 'multer';
 // import path from "node:path";
 import { upload } from "../middlewares/multer.middlewares";
+import { verifyJWT } from "../middlewares/auth.middleware";
 
 const bookRouter = Router();
 // const upload = multer({
@@ -12,7 +13,7 @@ const bookRouter = Router();
 
 bookRouter
 .route('/')
-.post(upload.fields([
+.post(verifyJWT, upload.fields([
     { name: 'coverImage', maxCount: 1 },
     { name: 'file', maxCount: 1 }
 ]), createBook)
