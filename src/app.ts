@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import globalErrorHandler from './middlewares/globalErrorHandler';
 import userRouter from './users/users.router';
 import bookRouter from './books/books.router';
@@ -7,6 +8,7 @@ import bookRouter from './books/books.router';
 const app = express();
 app.use(express.json());
 app.use(morgan('tiny'));
+app.use(cookieParser());
 //Routes
 app.get('/', (req, res, next) => {
     res.json({message: "Hello from Prashant"})
