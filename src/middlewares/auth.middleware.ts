@@ -15,7 +15,7 @@ export const verifyJWT = async (req: AuthenticatedRequest, res: Response, next: 
             return next(createHttpError(401, 'Unauthorized Request'))
         }
         const decodedToken = jwt.verify(token, config.accessTokenSecret as string) as JwtPayload
-        const user: IUser | null = await User.findById(decodedToken?.sub).select("-password -refreshToken").lean().exec()
+        const user: IUser | null = await User.findById(decodedToken?._id).select("-password -refreshToken").lean().exec()
         if(!user){
             return next(createHttpError(401, 'Invalid Access Token'))
         }
