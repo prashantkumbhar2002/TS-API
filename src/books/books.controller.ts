@@ -61,7 +61,7 @@ const createBook = async (req: AuthenticatedRequest, res: Response, next: NextFu
 
         const book = await booksModel.create({
             title: title,
-            author: req.user?._id,
+            author: req.user,
             genre: genre,
             coverImage: coverImageUrl,
             file: fileUrl
@@ -122,7 +122,100 @@ const updateBook = async (req: AuthenticatedRequest, res: Response, next: NextFu
     }
 }
 
+const getAllBooks = async (req:AuthenticatedRequest, res: Response, next: NextFunction) => {
+    let { page: pageNumber = 1, limit: limitNumber = 5, query, sortBy, sortType } = req.query;
+    let page = isNaN(Number(pageNumber)) ? 1 : Number(pageNumber);
+    let limit = isNaN(Number(limitNumber)) ? 5: Number(limitNumber);
+    if(page < 0) page = 1;
+    if(limit <= 0) limit = 5;
+    const matchStage: any = {};
+    if(query){
+        matchStage["$match"] = {
+            $or: [
+                { title: {$regex: query, $options: "i"} },
+                { genre: {$regex: query, $options: "i"} },
+                { "author.authorName": {$regex: query, $options: "i"} },
+            ]
+        };
+    }
+    else{
+        matchStage["$match"] = {};
+    }
+    
+    const sortStage: any = {};
+    if(sortBy && sortType){
+        sortStage["$sort"] = {
+            [sortBy as string]: sortType === 'asc' ? 1 : -1,
+        }
+    }
+    else{
+        sortStage["$sort"] = {
+            createdAt: -1
+        }
+    }
+    const pipeline = [
+        {
+            $lookup: {
+                from: "users",
+                localField: "author",
+                foreignField: "_id",
+                as: "author"
+            }
+        },
+        {
+            $unwind: "$author"
+        },
+        {
+            $project: {
+                _id: 1,
+                title: 1,
+                genre: 1,
+                coverImage: 1,
+                file: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                author: {
+                    author_id: "$author._id",
+                    authorName: "$author.name",
+                    // authorEmail: "$author.email"
+                }
+            }
+        },
+        matchStage,
+        sortStage,
+        {
+            $skip: (page - 1) * limit,
+        },
+        {
+            $limit: limit,
+        },
+        // {
+        //     $group: {
+        //         _id: null,
+        //         books: "$$ROOT",
+        //     }
+        // },
+        // {
+        //     $project: {
+        //         _id: 0,
+        //         books: 1
+        //     }
+        // }
+    ]
+    
+    try {
+        // const books = await booksModel.find();
+        const books = await booksModel.aggregate(pipeline);
+        if(!books){
+            return next(createHttpError(500, 'Error while fetching books from DB'))
+        }
+        res.status(200).json({message: 'Books fetched successfully', books});
+    } catch (error) {
+        next(createHttpError(500, "Error while fetching books"));
+    }
+}
 export {
     createBook,
-    updateBook
+    updateBook,
+    getAllBooks
 }
