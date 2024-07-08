@@ -11,7 +11,9 @@ const _config = {
     refreshTokenExpiry: process.env.REFRESH_TOKEN_EXPIRY,
     CLOUDINARY_CLOUD: process.env.CLOUDINARY_CLOUD,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
-    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+    cloudinaryBookFolder: process.env.CLOUDINARY_BOOK_FOLDER,
+    cloudinaryCoverImageFolder: process.env.CLOUDINARY_COVERIMAGE_FOLDER
 }
 
 export const config = Object.freeze(_config);   //to make _config obj readOnly
