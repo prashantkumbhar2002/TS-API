@@ -29,7 +29,7 @@ const generateAccessAndRefreshTokens = async (userId: any) => {
 
 const registerUsers = async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, password } = req.body;
-    if(!name || !email || !password){
+    if([name, email, password].some((field) => { return field?.trim() === ""})){
         const error = createHttpError(400, "All fields are required");
         return next(error);
     }
@@ -70,7 +70,7 @@ const registerUsers = async (req: Request, res: Response, next: NextFunction) =>
 
 const loginUsers = async (req:AuthenticatedRequest, res: Response, next:NextFunction) => {
     const { email, password } = req.body;
-    if(!email || !password){
+    if([email, password].some((field) => { return field?.trim() === ""})){
         return next(createHttpError(400, 'All fields are required'));
     }
     try {
