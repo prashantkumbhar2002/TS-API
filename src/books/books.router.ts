@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createBook } from "./books.controller";
+import { createBook, updateBook } from "./books.controller";
 // import multer from 'multer';
 // import path from "node:path";
 import { upload } from "../middlewares/multer.middlewares";
@@ -17,5 +17,10 @@ bookRouter
     { name: 'coverImage', maxCount: 1 },
     { name: 'file', maxCount: 1 }
 ]), createBook)
+
+bookRouter.route("/:bookId").patch(verifyJWT, upload.fields([
+    { name: 'coverImage', maxCount: 1 },
+    { name: 'file', maxCount: 1 }
+]), updateBook)
 
 export default bookRouter;

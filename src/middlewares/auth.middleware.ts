@@ -4,8 +4,8 @@ import createHttpError from "http-errors";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { config } from "../config/config";
 
-interface AuthenticatedRequest extends Request {
-    user?: IUser;
+export interface AuthenticatedRequest extends Request {
+    user?: { _id: string };
 }
 
 export const verifyJWT = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -19,7 +19,7 @@ export const verifyJWT = async (req: AuthenticatedRequest, res: Response, next: 
         if(!user){
             return next(createHttpError(401, 'Invalid Access Token'))
         }
-        req.user = user;
+        req.user = decodedToken?._id;
         next();
 
     } catch (error: any) {
