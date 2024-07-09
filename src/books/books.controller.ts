@@ -214,8 +214,23 @@ const getAllBooks = async (req:AuthenticatedRequest, res: Response, next: NextFu
         next(createHttpError(500, "Error while fetching books"));
     }
 }
+
+const getBook = async (req:AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { bookId } = req.params;
+    try {
+        const book = await booksModel.findById(bookId);
+        if(!book){
+            return next(createHttpError(404, 'Book not found'));
+        }
+        res.status(200).json({message: 'Book details fetched successfully', book})
+    } catch (error) {
+        next(createHttpError(500, 'Error while fetching details of book'))
+    }
+}
+
 export {
     createBook,
     updateBook,
-    getAllBooks
+    getAllBooks,
+    getBook
 }
