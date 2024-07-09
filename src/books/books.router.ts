@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createBook, getAllBooks, getBook, updateBook } from "./books.controller";
+import { createBook, deleteBook, getAllBooks, getBook, updateBook } from "./books.controller";
 // import multer from 'multer';
 // import path from "node:path";
 import { upload } from "../middlewares/multer.middlewares";
@@ -27,6 +27,7 @@ bookRouter
     { name: 'file', maxCount: 1 }
 ]), updateBook)
 .get(verifyJWT, getBook)
+.delete(verifyJWT, deleteBook)
 
 
 export default bookRouter;

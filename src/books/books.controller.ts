@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 // import path from "node:path";
-import { uploadOnCloudinary } from "../config/cloudinary";
+import { deleteFromCloudinary, uploadOnCloudinary } from "../config/cloudinary";
 import createHttpError from "http-errors";
 import booksModel from "./books.model";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
@@ -217,14 +217,45 @@ const getAllBooks = async (req:AuthenticatedRequest, res: Response, next: NextFu
 
 const getBook = async (req:AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { bookId } = req.params;
+    if(!bookId){
+        return next(createHttpError(400, 'Book ID is required'))
+    }
     try {
         const book = await booksModel.findById(bookId);
         if(!book){
             return next(createHttpError(404, 'Book not found'));
         }
-        res.status(200).json({message: 'Book details fetched successfully', book})
+        res.status(200).json({message: 'Book details fetched successfully', book});
     } catch (error) {
-        next(createHttpError(500, 'Error while fetching details of book'))
+        next(createHttpError(500, 'Error while fetching details of book'));
+    }
+}
+
+const deleteBook = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { bookId } = req.params;
+    if(!bookId){
+        return next(createHttpError(400, 'Book ID is required'))
+    }
+    const book = await booksModel.findById(bookId);
+    if(!book){
+        return next(createHttpError(404, 'Book not found'))
+    }
+    if(book.author.toString() !== req.user?.toString()){
+        return next(createHttpError(403, 'Unauthorized'));
+    }
+    try {
+        await booksModel.findByIdAndDelete(bookId);
+        const deleteCoverImageRes = await deleteFromCloudinary(book.coverImage, 'image');
+        if(!deleteCoverImageRes){
+            return next(createHttpError(500, 'Cannot delete resource now. Please try later'))
+        }
+        const deleteBookFile = await deleteFromCloudinary(book.file, 'raw');
+        if(!deleteBookFile){
+            return next(createHttpError(500, 'Cannot delete Book PDF file. Please try again later'))
+        }
+        res.status(204).json({message: 'Book Deleted successfully'})
+    } catch (error) {
+        next(createHttpError(500, 'Error while deleting book'));
     }
 }
 
@@ -232,5 +263,6 @@ export {
     createBook,
     updateBook,
     getAllBooks,
-    getBook
+    getBook,
+    deleteBook
 }

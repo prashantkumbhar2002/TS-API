@@ -16,7 +16,7 @@ const uploadOnCloudinary = async (localpath: string, fileName: string, folder: s
             return null;
         }
         if(!resource_type){
-            resource_type: 'auto';
+            resource_type = 'auto';
         }
         // Upload to Cloudinary
         const response = await cloudinary.uploader.upload(localpath, { 
@@ -47,4 +47,37 @@ const uploadOnCloudinary = async (localpath: string, fileName: string, folder: s
     }
 };
 
-export { uploadOnCloudinary };
+const extractPublicIdFromUrl = (cloudinaryUrl: string, resource_type: 'auto' | 'image' | 'video' | 'raw'): string => {
+    const parts = cloudinaryUrl.split('/');
+    if(resource_type === 'raw'){
+        return parts.at(-2) + "/" + parts.at(-1);
+    }
+    else{
+        return parts.at(-2) + "/" + parts.at(-1)?.split('.').at(-2);
+    }
+}
+
+const deleteFromCloudinary = async (cloudinaryUrl: string, resource_type: 'auto' | 'image' | 'video' | 'raw') => {
+    console.log(`Deleting file: ${cloudinaryUrl}, with resource type ${resource_type}`);
+    if(!cloudinary || !resource_type){
+        console.error('Invalid parameters provided for upload');
+        return null
+    }
+    try {
+        const publicId = extractPublicIdFromUrl(cloudinaryUrl, resource_type);
+        console.log('Public Id: ' + publicId)
+        const response = await cloudinary.uploader.destroy(publicId, { resource_type: resource_type });
+        console.log(response);
+        if(response.result === 'ok'){
+            return response;
+        }
+        else{
+            return null;
+        }
+    } catch (error) {
+        console.error("Failed to delete from Cloudinary", error)
+        return null;
+    }
+}
+
+export { uploadOnCloudinary, deleteFromCloudinary };
