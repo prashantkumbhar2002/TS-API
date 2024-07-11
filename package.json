@@ -1,8 +1,8 @@
 {
-  "name": "ts-api",
+  "name": "eBook_Typescript-api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.ts",
   "scripts": {
     "dev": "nodemon server.ts"
   },
